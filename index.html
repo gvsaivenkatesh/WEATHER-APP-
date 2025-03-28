@@ -18,7 +18,7 @@
             background: #fff;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 10px #ccc;
+            box-shadow: 0 0 10px #ccc;
         }
         input, button {
             margin: 10px;
@@ -29,8 +29,9 @@
             cursor: pointer;
             border: none;
             background: #c07f10;
-            color: rgb(98, 6, 6);
-            border: radius 0px;
+            color: white;
+            border-radius: 4px;
+            transition: 0.3s;
         }
         button:hover {
             background: #0056b3;
@@ -38,12 +39,44 @@
         #weatherResult {
             margin-top: 20px;
         }
+        .favorites-list {
+            list-style: none;
+            padding: 0;
+        }
+        .favorites-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #f1f1f1;
+            margin: 5px 0;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .favorites-list button {
+            margin-left: 5px;
+            padding: 5px 10px;
+            font-size: 14px;
+            background: #28a745;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .favorites-list button:hover {
+            background: #218838;
+        }
+        .remove-btn {
+            background: #dc3545;
+        }
+        .remove-btn:hover {
+            background: #c82333;
+        }
     </style>
 </head>
 
 <body>
+    <h1>Weather App 🌤️</h1>
     
-    <h1>Weather App </h1>
     <form id="searchForm">
         <input 
             type="text"
@@ -53,12 +86,14 @@
         />
         <button type="submit">Search</button>
     </form>
+
     <div id="weatherDisplay"></div>
-    <h2>Favorite Cities</h2>
-    <ul id="favoritesList"></ul>
+
+    <h2>Favorite Cities </h2>
+    <ul id="favoritesList" class="favorites-list"></ul>
 
     <script>
-        const API_KEY = 'bd5e378503939ddaee76f12ad7a97608'; // Replace this with your OpenWeather API key
+        const API_KEY = 'bd5e378503939ddaee76f12ad7a97608'; // Replace with your OpenWeather API key
         const BASE_URL = `https://api.openweathermap.org/data/2.5/weather`;
 
         const searchForm = document.getElementById("searchForm");
@@ -68,6 +103,7 @@
 
         let favoriteCities = JSON.parse(localStorage.getItem("favoriteCities")) || [];
 
+        // Display weather data
         function displayWeather(data) {
             weatherDisplay.innerHTML = `
                 <h2>${data.name}, ${data.sys.country}</h2>
@@ -77,6 +113,7 @@
             `;
         }
 
+        // Fetch weather data
         function fetchWeather(city) {
             const url = `${BASE_URL}?q=${city}&appid=${API_KEY}&units=metric`;
 
@@ -87,6 +124,8 @@
                         weatherDisplay.innerHTML = `<p>City not found.</p>`;
                     } else {
                         displayWeather(data);
+
+                        // Add to favorites if not already present
                         if (!favoriteCities.includes(city)) {
                             favoriteCities.push(city);
                             localStorage.setItem("favoriteCities", JSON.stringify(favoriteCities));
@@ -100,28 +139,35 @@
                 });
         }
 
+        // Display favorite cities with buttons
         function displayFavorites() {
             favoritesList.innerHTML = ""; 
+            
             favoriteCities.forEach(city => {
                 const li = document.createElement("li");
+
+                // Display city name
                 const span = document.createElement("span");
-                city.textContent = "city";
                 span.textContent = city;
-                
+
+                // Show weather button
                 const showWeatherBtn = document.createElement("button");
-                showWeatherBtn.textContent = "Show Weather";
+                showWeatherBtn.textContent = " Show Weather";
                 showWeatherBtn.addEventListener("click", () => {
                     fetchWeather(city);
                 });
 
+                // Remove button
                 const removeBtn = document.createElement("button");
-                removeBtn.textContent = "Remove";
+                removeBtn.textContent = " Remove";
+                removeBtn.classList.add("remove-btn");
                 removeBtn.addEventListener("click", () => {
                     favoriteCities = favoriteCities.filter(c => c !== city);
                     localStorage.setItem("favoriteCities", JSON.stringify(favoriteCities));
                     displayFavorites();
                 });
 
+                // Append elements
                 li.appendChild(span);
                 li.appendChild(showWeatherBtn);
                 li.appendChild(removeBtn);
@@ -129,14 +175,19 @@
             });
         }
 
+        // Event listener for form submission
         searchForm.addEventListener("submit", (event) => {
             event.preventDefault();
-            const city = cityInput.value;
-            fetchWeather(city);
-            cityInput.value = "";
+            const city = cityInput.value.trim();
+            
+            if (city) {
+                fetchWeather(city);
+                cityInput.value = "";
+            }
         });
 
-        displayFavorites(); 
+        // Display favorites on page load
+        displayFavorites();
     </script>
 </body>
 </html>
